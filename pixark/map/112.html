@@ -1,23 +1,49 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Image map types</title>
+    <title>PixARK #112</title>
     <style>
-      /* Always set the map height explicitly to define the size of the div
-       * element that contains the map. */
       #map {
         height: 100%;
       }
-      /* Optional: Makes the sample page fill the window. */
       html, body {
         height: 100%;
         margin: 0;
         padding: 0;
       }
+      #legend {
+        font-family: monospace;
+        background: #fff;
+        padding: 10px 20px 10px 20px;
+        margin: 20px;
+        border: 3px solid #000;
+      }
+      #legend ul {
+        list-style-type: none;
+        padding: 0;
+      }
+      #legend li {
+        padding: 3px;
+      }
     </style>
   </head>
   <body>
     <div id="map"></div>
+    <div id="legend">
+      <ul>
+      <li><span style="color:#75654b">▇</span> 末日之地</li>
+      <li><span style="color:#425a5f">▇</span> 黑暗森林</li>
+      <li><span style="color:#b3ffdd">▇</span> 冰封之地</li>
+      <li><span style="color:#a27f27">▇</span> 黃金秘境</li>
+      <li><span style="color:#7171ff">▇</span> 魔法森林</li>
+      <li><span style="color:#ffff62">▇</span> 沙漠</li>
+      <li><span style="color:#2e962b">▇</span> 沼澤</li>
+      <li><span style="color:#22692e">▇</span> 高山林地</li>
+      <li><span style="color:#4dc82e">▇</span> 草原</li>
+      <li><span style="color:#7eea35">▇</span> 新手草原</li>
+      <li><span style="color:#00fbff">▇</span> 深海</li>
+      </ul>
+    </div>
     <script>
 
       function initMap() {
@@ -61,6 +87,7 @@
 
         map.mapTypes.set('pixark', pixarkMapType);
         map.setMapTypeId('pixark');
+        map.controls[google.maps.ControlPosition.LEFT_BOTTOM].push(document.getElementById('legend'));
       }
     </script>
     <script async defer

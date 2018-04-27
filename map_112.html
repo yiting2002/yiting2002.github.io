@@ -32,6 +32,9 @@
 
         var moonMapType = new google.maps.ImageMapType({
           getTileUrl: function(coord, zoom) {
+              var scale = 1 << zoom;
+              if (coord.x < 0 || coord.x >= scale) return null;
+              if (coord.y < 0 || coord.y >= scale) return null;
               return 'map_112.png';
           },
           tileSize: new google.maps.Size(676, 676),

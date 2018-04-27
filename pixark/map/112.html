@@ -23,31 +23,27 @@
       function initMap() {
         var map = new google.maps.Map(document.getElementById('map'), {
           center: {lat: 0, lng: 0},
-          zoom: 4,
+          zoom: 1,
           streetViewControl: false,
-          mapTypeControl: false,
-          mapTypeControlOptions: {
-            mapTypeIds: ['moon']
-          }
+          mapTypeControl: false
         });
 
-        var moonMapType = new google.maps.ImageMapType({
+        var pixarkMapType = new google.maps.ImageMapType({
           getTileUrl: function(coord, zoom) {
-              //if (zoom < 1) return null;
-              //var scale = 1 << (zoom - 1);
-              //if (coord.x < 0 || coord.x >= scale) return null;
-              //if (coord.y < 0 || coord.y >= scale) return null;
-              if (coord.x != 0 || coord.y != 0) return null;
-              return 'map_112.png';
+              var scale = 1 << zoom;
+              var x = ((coord.x % scale) + scale) % scale;
+              if (coord.y < 0 || coord.y >= scale) return null;
+              return '112_'+zoom+'_'+x+'_'+coord.y+'.png';
           },
-          tileSize: new google.maps.Size(676, 676),
-          maxZoom: 6,
-          minZoom: 4,
-          name: 'Moon'
+          tileSize: new google.maps.Size(901, 901),
+          isPng: true,
+          maxZoom: 1,
+          minZoom: 0,
+          name: 'PixARK'
         });
 
-        map.mapTypes.set('moon', moonMapType);
-        map.setMapTypeId('moon');
+        map.mapTypes.set('pixark', pixarkMapType);
+        map.setMapTypeId('pixark');
       }
     </script>
     <script async defer

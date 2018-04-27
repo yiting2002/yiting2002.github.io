@@ -30,17 +30,34 @@
 
         var pixarkMapType = new google.maps.ImageMapType({
           getTileUrl: function(coord, zoom) {
-              var scale = 1 << zoom;
-              var x = ((coord.x % scale) + scale) % scale;
-              if (coord.y < 0 || coord.y >= scale) return null;
-              return '112_'+zoom+'_'+x+'_'+coord.y+'.png';
+            zoom -= 1;
+            if (zoom < 0) return null;
+            var scale = 1 << zoom;
+            //var x = ((coord.x % scale) + scale) % scale;
+            if (coord.x < 0 || coord.x >= scale) return null;
+            if (coord.y < 0 || coord.y >= scale) return null;
+            return '112_'+zoom+'_'+coord.x+'_'+coord.y+'.png';
           },
-          tileSize: new google.maps.Size(901, 901),
+          tileSize: new google.maps.Size(450, 450),
           isPng: true,
-          maxZoom: 1,
-          minZoom: 0,
+          maxZoom: 3,
+          minZoom: 1,
           name: 'PixARK'
         });
+
+        pixarkMapType.projection = {
+          fromLatLngToPoint: function(latLng) {
+            return new google.maps.Point(
+              latLng.lng() * 450 + 112.5,
+              latLng.lat() * 450 + 112.5);
+          },
+          fromPointToLatLng: function(point, noWrap) {
+            return new google.maps.LatLng(
+              point.y / 450 - 0.25,
+              point.x / 450 - 0.25,
+              noWrap);
+          }
+        };
 
         map.mapTypes.set('pixark', pixarkMapType);
         map.setMapTypeId('pixark');

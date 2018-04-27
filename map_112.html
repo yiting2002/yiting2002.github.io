@@ -23,7 +23,7 @@
       function initMap() {
         var map = new google.maps.Map(document.getElementById('map'), {
           center: {lat: 0, lng: 0},
-          zoom: 4,
+          zoom: 5,
           streetViewControl: false,
           mapTypeControl: false,
           mapTypeControlOptions: {
@@ -33,14 +33,14 @@
 
         var moonMapType = new google.maps.ImageMapType({
           getTileUrl: function(coord, zoom) {
-              var scale = 1 << (zoom - 4);
+              var scale = 1 << zoom;
               if (coord.x < 0 || coord.x >= scale) return null;
               if (coord.y < 0 || coord.y >= scale) return null;
               return 'map_112.png';
           },
           tileSize: new google.maps.Size(676, 676),
           maxZoom: 6,
-          minZoom: 4,
+          minZoom: 0,
           name: 'Moon'
         });
 

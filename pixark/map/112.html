@@ -45,15 +45,19 @@
       </ul>
     </div>
     <script>
-      var map, sheet;
+      var map, sheet, marker = new Array();
       function initSheet(data) {
         for (var i = 1; i < data.values.length; i++) {
-          var marker = new google.maps.Marker({
+          //var info = 'X:'+data.values[i][1]+', Y:'+data.values[i][2];
+          var info = '['+data.values[i][1]+', '+data.values[i][2]+']';
+          if (data.values[i].length > 3) info += '\n'+data.values[i][3];
+          var mark = new google.maps.Marker({
             position: new google.maps.LatLng(parseFloat(data.values[i][2]) / 8000, parseFloat(data.values[i][1]) / 8000),
             label: data.values[i][0],
-            title: 'X:'+data.values[i][1]+', Y:'+data.values[i][2],
+            title: info,
             map: map
           });
+          marker.push(mark);
         }
       }
       function initMap() {
@@ -100,7 +104,7 @@
 
         sheet = document.createElement('script');
         sheet.type = 'text/javascript';
-        sheet.src = 'https://sheets.googleapis.com/v4/spreadsheets/15LwlFt2_sJv8l3_-Uu6fyssOL9_EuE2-DpF4OcDjcr8/values/map!A:C?key=AIzaSyBokzsCC_kJcT22Uw3cTzilwXLVkqQarKs&callback=initSheet';
+        sheet.src = 'https://sheets.googleapis.com/v4/spreadsheets/15LwlFt2_sJv8l3_-Uu6fyssOL9_EuE2-DpF4OcDjcr8/values/map!A:D?key=AIzaSyBokzsCC_kJcT22Uw3cTzilwXLVkqQarKs&callback=initSheet';
         document.getElementsByTagName('head')[0].appendChild(sheet);
       }
     </script>

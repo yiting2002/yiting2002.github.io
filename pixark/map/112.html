@@ -45,21 +45,30 @@
       </ul>
     </div>
     <script>
-
+      var map, sheet;
+      function initSheet(data) {
+        for (var i = 1; i < data.values.length; i++) {
+          var marker = new google.maps.Marker({
+            position: new google.maps.LatLng(parseFloat(data.values[i][2]) / 8000, parseFloat(data.values[i][1]) / 8000),
+            label: data.values[i][0],
+            title: 'X:'+data.values[i][1]+', Y:'+data.values[i][2],
+            map: map
+          });
+        }
+      }
       function initMap() {
-        var map = new google.maps.Map(document.getElementById('map'), {
+        map = new google.maps.Map(document.getElementById('map'), {
           center: {lat: 0, lng: 0},
           zoom: 1,
           streetViewControl: false,
           mapTypeControl: false
         });
 
-        var pixarkMapType = new google.maps.ImageMapType({
+        var mapType = new google.maps.ImageMapType({
           getTileUrl: function(coord, zoom) {
             zoom -= 1;
             if (zoom < 0) return null;
             var scale = 1 << zoom;
-            //var x = ((coord.x % scale) + scale) % scale;
             if (coord.x < 0 || coord.x >= scale) return null;
             if (coord.y < 0 || coord.y >= scale) return null;
             return '112_'+zoom+'_'+coord.x+'_'+coord.y+'.png';
@@ -71,23 +80,28 @@
           name: 'PixARK'
         });
 
-        pixarkMapType.projection = {
+        mapType.projection = {
           fromLatLngToPoint: function(latLng) {
             return new google.maps.Point(
-              latLng.lng() * 450 + 112.5,
-              latLng.lat() * 450 + 112.5);
+              (latLng.lng() + 0.25) * 450,
+              (latLng.lat() + 0.25) * 450);
           },
           fromPointToLatLng: function(point, noWrap) {
             return new google.maps.LatLng(
-              point.y / 450 - 0.25,
-              point.x / 450 - 0.25,
-              noWrap);
+              point.y * 450 - 0.25,
+              point.x * 450 - 0.25,
+              true);
           }
         };
 
-        map.mapTypes.set('pixark', pixarkMapType);
+        map.mapTypes.set('pixark', mapType);
         map.setMapTypeId('pixark');
         map.controls[google.maps.ControlPosition.LEFT_BOTTOM].push(document.getElementById('legend'));
+
+        sheet = document.createElement('script');
+        sheet.type = 'text/javascript';
+        sheet.src = 'https://sheets.googleapis.com/v4/spreadsheets/15LwlFt2_sJv8l3_-Uu6fyssOL9_EuE2-DpF4OcDjcr8/values/map!A:C?key=AIzaSyBokzsCC_kJcT22Uw3cTzilwXLVkqQarKs&callback=initSheet';
+        document.getElementsByTagName('head')[0].appendChild(sheet);
       }
     </script>
     <script async defer

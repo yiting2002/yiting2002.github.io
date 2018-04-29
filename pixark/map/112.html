@@ -49,19 +49,43 @@
       </ul>
     </div>
     <script>
-      var map, sheet, marker = new Array();
+      var map, sheet, info, marker = new Array();
+      var iconN, iconS;
+      function initMarker(mark) {
+        mark.addListener('click',function() {
+          var l = mark.getLabel().text;
+          for (var i = 0; i < marker.length; i++) {
+            if (marker[i].getLabel().text == l) {
+              marker[i].setIcon(iconS);
+              marker[i].setZIndex(google.maps.Marker.MAX_ZINDEX+1);
+              if (marker[i] == mark) {
+                info.setContent(mark.getTitle().replace('\n','<br/>'));
+                info.open(map, mark);
+              }
+            }
+            else if (marker[i].getZIndex() != null) {
+              marker[i].setIcon(iconN);
+              marker[i].setZIndex(null);
+            }
+          }
+        });
+        marker.push(mark);
+      }
       function initSheet(data) {
         for (var i = 1; i < data.values.length; i++) {
-          //var info = 'X:'+data.values[i][1]+', Y:'+data.values[i][2];
-          var info = '['+data.values[i][1]+', '+data.values[i][2]+']';
-          if (data.values[i].length > 3) info += '\n'+data.values[i][3];
-          var mark = new google.maps.Marker({
-            position: new google.maps.LatLng(parseFloat(data.values[i][2]) / 8000, parseFloat(data.values[i][1]) / 8000),
-            label: data.values[i][0],
-            title: info,
+          var row = data.values[i];
+          if (row.length < 3) continue;
+          var title = '['+row[1]+', '+row[2]+']';
+          if (row.length > 3) title += '\n'+row[3];
+          var label = {text: row[0], color: '#FFF'};
+          var pos = {lat: parseFloat(row[2]) / 8000, lng: parseFloat(row[1]) / 8000};
+          initMarker(new google.maps.Marker({
+            position: pos,
+            icon: iconN,
+            label: label,
+            title: title,
             map: map
-          });
-          marker.push(mark);
+          }));
         }
       }
       function initMap() {
@@ -96,8 +120,8 @@
           },
           fromPointToLatLng: function(point, noWrap) {
             return new google.maps.LatLng(
-              point.y * 450 - 0.25,
-              point.x * 450 - 0.25,
+              point.y / 450 - 0.25,
+              point.x / 450 - 0.25,
               true);
           }
         };
@@ -105,6 +129,26 @@
         map.mapTypes.set('pixark', mapType);
         map.setMapTypeId('pixark');
         map.controls[google.maps.ControlPosition.LEFT_CENTER].push(document.getElementById('legend'));
+
+        iconN = {
+          url: 'data:image/svg+xml;utf8,<svg width="27" height="43" viewBox="70 40 111 172" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg"><path d="M125,42C165,42 194,85 167,126S133,181 131,198S122,215 120,198S111,165 84,126S86,42 126,42Z" stroke-width="4" stroke="#fcfcfc" fill="#ea4335"/></svg>',
+          anchor: new google.maps.Point(13.5,42),
+          labelOrigin: new google.maps.Point(13.5,15)
+        };
+        iconS = {
+          url: 'data:image/svg+xml;utf8,<svg width="27" height="43" viewBox="70 40 111 172" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg"><path d="M125,42C165,42 194,85 167,126S133,181 131,198S122,215 120,198S111,165 84,126S86,42 126,42Z" stroke-width="4" stroke="#fcfcfc" fill="#eb9336"/></svg>',
+          anchor: new google.maps.Point(13.5,42),
+          labelOrigin: new google.maps.Point(13.5,15)
+        };
+        info = new google.maps.InfoWindow();
+        info.addListener('closeclick',function() {
+          for (var i = 0; i < marker.length; i++) {
+            if (marker[i].getZIndex() != null) {
+              marker[i].setIcon(iconN);
+              marker[i].setZIndex(null);
+            }
+          }
+        });
 
         sheet = document.createElement('script');
         sheet.type = 'text/javascript';

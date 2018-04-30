@@ -84,11 +84,11 @@
           if (row.length > 3 && row[3] != '') title += '\n'+row[3];
           var label = {text: row[0], color: '#FFF'};
           var pos = {lat: parseFloat(row[2]) / 8000, lng: parseFloat(row[1]) / 8000};
-		  var shape = {type: 'poly', coords: [-2,7,5,0,18,0,25,7,25,20,17,43,10,43,-2,20]};
+          var shape = {type: 'poly', coords: [-2,7,5,0,18,0,25,7,25,20,17,43,10,43,-2,20]};
           initMarker(new google.maps.Marker({
             position: pos,
             icon: gIconN,
-			shape: shape,
+            shape: shape,
             label: label,
             title: title,
             map: gMap
@@ -102,7 +102,7 @@
           zoom: 2,
           streetViewControl: false,
           mapTypeControl: false,
-		  rotateControl: false
+          rotateControl: false
         });
 
         var mapType = new google.maps.ImageMapType({

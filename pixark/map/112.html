@@ -15,25 +15,28 @@
       }
       #legend {
         font-family: monospace;
-        background: #fff;
-        padding: 10px 20px 10px 20px;
+        background-color: #fff;
+        padding: 10px;
         margin: 20px;
         border: 3px solid #000;
+        font-size: large;
       }
       #legend ul {
         list-style-type: none;
         padding: 0;
+        margin: 0;
       }
       #legend li {
-        font-size: large;
         padding: 3px;
+        margin: 0;
       }
     </style>
   </head>
   <body>
     <div id="map"></div>
     <div id="legend">
-      <a style="font-size:large;font-weight:bold;color:#00F;text-decoration:initial;" target="_blank" href="https://docs.google.com/spreadsheets/d/15LwlFt2_sJv8l3_-Uu6fyssOL9_EuE2-DpF4OcDjcr8/edit">[+增加標記]</a>
+      <a style="font-weight:bold;color:#00F;text-decoration:initial;" target="_blank" href="https://docs.google.com/spreadsheets/d/15LwlFt2_sJv8l3_-Uu6fyssOL9_EuE2-DpF4OcDjcr8/edit">[+增加標記]</a>
+      <br/><br/>
       <ul>
       <li><span style="color:#75654b">▇</span> 末日之地</li>
       <li><span style="color:#425a5f">▇</span> 黑暗森林</li>
@@ -49,8 +52,9 @@
       </ul>
     </div>
     <script>
-      var map, sheet, info, marker = new Array();
+      var map, info, marker = new Array();
       var iconN, iconS;
+
       function initMarker(mark) {
         mark.addListener('click',function() {
           var l = mark.getLabel().text;
@@ -71,6 +75,7 @@
         });
         marker.push(mark);
       }
+
       function initSheet(data) {
         for (var i = 1; i < data.values.length; i++) {
           var row = data.values[i];
@@ -88,6 +93,7 @@
           }));
         }
       }
+
       function initMap() {
         map = new google.maps.Map(document.getElementById('map'), {
           center: {lat: 0, lng: 0},
@@ -131,14 +137,14 @@
         map.controls[google.maps.ControlPosition.LEFT_CENTER].push(document.getElementById('legend'));
 
         iconN = {
-          url: 'data:image/svg+xml;utf8,<svg width="27" height="43" viewBox="70 40 111 172" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg"><path d="M125,42C165,42 194,85 167,126S133,181 131,198S122,215 120,198S111,165 84,126S86,42 126,42Z" stroke-width="4" stroke="#fcfcfc" fill="#ea4335"/></svg>',
+          url: 'data:image/svg+xml;utf8,<svg width="27" height="43" viewBox="16 16 108 172" xmlns="http://www.w3.org/2000/svg"><path d="M70,18C108,18 139,60 111,102S77,158 76,174S65,190 64,174S57,144 29,102S32,18 70,18Z" stroke-width="4" stroke="#ffffff" fill="#ea4335"/></svg>',
           anchor: new google.maps.Point(13.5,42),
-          labelOrigin: new google.maps.Point(13.5,15)
+          labelOrigin: new google.maps.Point(13,15)
         };
         iconS = {
-          url: 'data:image/svg+xml;utf8,<svg width="27" height="43" viewBox="70 40 111 172" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg"><path d="M125,42C165,42 194,85 167,126S133,181 131,198S122,215 120,198S111,165 84,126S86,42 126,42Z" stroke-width="4" stroke="#fcfcfc" fill="#eb9336"/></svg>',
+          url: 'data:image/svg+xml;utf8,<svg width="27" height="43" viewBox="16 16 108 172" xmlns="http://www.w3.org/2000/svg"><path d="M70,18C108,18 139,60 111,102S77,158 76,174S65,190 64,174S57,144 29,102S32,18 70,18Z" stroke-width="6" stroke="#ffffff" fill="#ca35ea"/></svg>',
           anchor: new google.maps.Point(13.5,42),
-          labelOrigin: new google.maps.Point(13.5,15)
+          labelOrigin: new google.maps.Point(13,15)
         };
         info = new google.maps.InfoWindow();
         info.addListener('closeclick',function() {
@@ -150,7 +156,7 @@
           }
         });
 
-        sheet = document.createElement('script');
+        var sheet = document.createElement('script');
         sheet.type = 'text/javascript';
         sheet.src = 'https://sheets.googleapis.com/v4/spreadsheets/15LwlFt2_sJv8l3_-Uu6fyssOL9_EuE2-DpF4OcDjcr8/values/map!A:D?key=AIzaSyBokzsCC_kJcT22Uw3cTzilwXLVkqQarKs&callback=initSheet';
         document.getElementsByTagName('head')[0].appendChild(sheet);

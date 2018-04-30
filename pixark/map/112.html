@@ -79,9 +79,9 @@
       function initSheet(data) {
         for (var i = 1; i < data.values.length; i++) {
           var row = data.values[i];
-          if (row.length < 3) continue;
+          if (row.length < 3 || row[0] == '' || row[1] == '' || row[2] == '') continue;
           var title = '['+row[1]+', '+row[2]+']';
-          if (row.length > 3) title += '\n'+row[3];
+          if (row.length > 3 && row[3] != '') title += '\n'+row[3];
           var label = {text: row[0], color: '#FFF'};
           var pos = {lat: parseFloat(row[2]) / 8000, lng: parseFloat(row[1]) / 8000};
           initMarker(new google.maps.Marker({

@@ -30,13 +30,24 @@
         padding: 3px;
         margin: 0;
       }
+      #legend select {
+        margin: 6px 0 20px 0;
+        font-family: monospace;
+        font-size: large;
+      }
     </style>
   </head>
   <body>
     <div id="map"></div>
     <div id="legend">
       <a style="font-weight:bold;color:#00F;text-decoration:initial;" target="_blank" href="https://docs.google.com/spreadsheets/d/15LwlFt2_sJv8l3_-Uu6fyssOL9_EuE2-DpF4OcDjcr8/edit">[+增加標記]</a>
-      <br/><br/>
+      <br/>
+      <select id="layer" style="width:120px;">
+        <option style="color:#000;background-color:#fff;">0 全部</option>
+        <option>1 傳送門</option>
+        <option>2 天然資源</option>
+        <option>3 部落據點</option>
+      </select><br/>
       <ul>
       <li><span style="color:#75654b">▇</span> 末日之地</li>
       <li><span style="color:#425a5f">▇</span> 黑暗森林</li>
@@ -53,46 +64,58 @@
     </div>
     <script>
       var gMap, gWindow, gMarkers = new Array();
-      var gIconN, gIconS;
+      var gIcons, gColors = ['#ea4335','#3988b4','#499037','#9171c4'];
 
-      function initMarker(marker) {
-        marker.addListener('click',function() {
-          var l = marker.getLabel().text;
-          for (var i = 0; i < gMarkers.length; i++) {
-            if (gMarkers[i].getLabel().text == l) {
-              gMarkers[i].setIcon(gIconS);
-              gMarkers[i].setZIndex(google.maps.Marker.MAX_ZINDEX+1);
-              if (gMarkers[i] == marker) {
-                gWindow.setContent(marker.getTitle().replace('\n','<br/>'));
-                gWindow.open(gMap, marker);
-              }
+      function resetMarker() {
+        for (var i = 1; i < gMarkers.length; i++) {
+          for (var j = 0; j < gMarkers[i].length; j++) {
+            var m = gMarkers[i][j];
+            if (m.getZIndex() != null) {
+              m.setIcon(gIcons[i]);
+              m.setZIndex(null);
             }
-            else if (gMarkers[i].getZIndex() != null) {
-              gMarkers[i].setIcon(gIconN);
-              gMarkers[i].setZIndex(null);
+          }
+        }
+      }
+
+      function initMarker(marker, layer) {
+        marker.addListener('click',function() {
+          resetMarker();
+          var t = marker.getLabel().text;
+          for (var j = 0; j < gMarkers[layer].length; j++) {
+            var m = gMarkers[layer][j];
+            if (m.getLabel().text == t) {
+              m.setIcon(gIcons[0]);
+              m.setZIndex(google.maps.Marker.MAX_ZINDEX+1);
+              if (m == marker) {
+                gWindow.setContent(m.getTitle().replace('\n','<br/>'));
+                gWindow.open(gMap, m);
+              }
             }
           }
         });
-        gMarkers.push(marker);
+        gMarkers[layer].push(marker);
       }
 
       function initSheet(data) {
         for (var i = 1; i < data.values.length; i++) {
-          var row = data.values[i];
-          if (row.length < 3 || row[0] == '' || row[1] == '' || row[2] == '') continue;
-          var title = '['+row[1]+', '+row[2]+']';
-          if (row.length > 3 && row[3] != '') title += '\n'+row[3];
-          var label = {text: row[0], color: '#FFF'};
-          var pos = {lat: parseFloat(row[2]) / 8000, lng: parseFloat(row[1]) / 8000};
-          var shape = {type: 'poly', coords: [-2,7,5,0,18,0,25,7,25,20,17,43,10,43,-2,20]};
+          var r = data.values[i];
+          if (r.length < 5 || r[0] == '' || r[1] == '' || r[2] == '' || r[4] == '') continue;
+          var title = '['+r[1]+', '+r[2]+']';
+          if (r[3] != '') title += '\n'+r[3];
+          var label = {text: r[0], color: '#FFF'};
+          var pos = {lat: parseFloat(r[2]) / 8000, lng: parseFloat(r[1]) / 8000};
+          var layer = parseInt(r[4]);
+          var icon = gIcons[layer];
+          var shape = {type: 'poly', coords: [-1,8,7,0,19,0,27,8,27,14,15,42,11,42,-1,14]};
           initMarker(new google.maps.Marker({
             position: pos,
-            icon: gIconN,
+            icon: gIcons[layer],
             shape: shape,
             label: label,
             title: title,
             map: gMap
-          }));
+          }), layer);
         }
       }
 
@@ -104,7 +127,6 @@
           mapTypeControl: false,
           rotateControl: false
         });
-
         var mapType = new google.maps.ImageMapType({
           getTileUrl: function(coord, zoom) {
             zoom -= 1;
@@ -120,7 +142,6 @@
           minZoom: 1,
           name: 'PixARK'
         });
-
         mapType.projection = {
           fromLatLngToPoint: function(latLng) {
             return new google.maps.Point(
@@ -133,34 +154,41 @@
               (point.x / 450) - 0.25, true);
           }
         };
-
         gMap.mapTypes.set('pixark', mapType);
         gMap.setMapTypeId('pixark');
         gMap.controls[google.maps.ControlPosition.LEFT_CENTER].push(document.getElementById('legend'));
 
-        gIconN = {
-          url: 'data:image/svg+xml;utf8,<svg width="27" height="43" viewBox="16 16 108 172" xmlns="http://www.w3.org/2000/svg"><path d="M70,18C108,18 139,60 111,102S77,158 76,174S65,190 64,174S57,144 29,102S32,18 70,18Z" stroke-width="4" stroke="#ffffff" fill="#ea4335"/></svg>',
-          anchor: new google.maps.Point(13.5,42),
-          labelOrigin: new google.maps.Point(13,15)
-        };
-        gIconS = {
-          url: 'data:image/svg+xml;utf8,<svg width="27" height="43" viewBox="16 16 108 172" xmlns="http://www.w3.org/2000/svg"><path d="M70,18C108,18 139,60 111,102S77,158 76,174S65,190 64,174S57,144 29,102S32,18 70,18Z" stroke-width="6" stroke="#ffffff" fill="#ca35ea"/></svg>',
-          anchor: new google.maps.Point(13.5,42),
-          labelOrigin: new google.maps.Point(13,15)
-        };
-        gWindow = new google.maps.InfoWindow();
-        gWindow.addListener('closeclick',function() {
-          for (var i = 0; i < gMarkers.length; i++) {
-            if (gMarkers[i].getZIndex() != null) {
-              gMarkers[i].setIcon(gIconN);
-              gMarkers[i].setZIndex(null);
+        gIcons = new Array();
+        var gLayer = document.getElementById('layer');
+        for (var i = 0; i < gColors.length; i++) {
+          gMarkers.push(new Array());
+          gIcons.push({
+            url: 'data:image/svg+xml;utf8,<svg width="27" height="43" viewBox="16 16 108 172" xmlns="http://www.w3.org/2000/svg"><path d="M70,18C108,18 139,60 111,102S77,158 76,174S65,190 64,174S57,144 29,102S32,18 70,18Z" stroke-width="6" stroke="#ffffff" fill="'+gColors[i]+'"/></svg>',
+            anchor: new google.maps.Point(13.5,42),
+            labelOrigin: new google.maps.Point(13.5,15)
+          });
+          if (i == 0) continue;
+          gLayer.options[i].style.color = '#fff';
+          gLayer.options[i].style.backgroundColor = gColors[i];
+        }
+        gLayer.addEventListener('change', function() {
+          resetMarker();
+          gWindow.close();
+          var s = gLayer.selectedIndex;
+          gLayer.style.color = gLayer.options[s].style.color;
+          gLayer.style.backgroundColor = gLayer.options[s].style.backgroundColor;
+          for (var i = 1; i < gMarkers.length; i++) {
+            for (var j = 0; j < gMarkers[i].length; j++) {
+              gMarkers[i][j].setVisible(s == 0 || s == i);
             }
           }
         });
+        gWindow = new google.maps.InfoWindow();
+        gWindow.addListener('closeclick', resetMarker);
 
         var sheet = document.createElement('script');
         sheet.type = 'text/javascript';
-        sheet.src = 'https://sheets.googleapis.com/v4/spreadsheets/15LwlFt2_sJv8l3_-Uu6fyssOL9_EuE2-DpF4OcDjcr8/values/map!A:D?key=AIzaSyBokzsCC_kJcT22Uw3cTzilwXLVkqQarKs&callback=initSheet';
+        sheet.src = 'https://sheets.googleapis.com/v4/spreadsheets/15LwlFt2_sJv8l3_-Uu6fyssOL9_EuE2-DpF4OcDjcr8/values/map!A:E?key=AIzaSyBokzsCC_kJcT22Uw3cTzilwXLVkqQarKs&callback=initSheet';
         document.getElementsByTagName('head')[0].appendChild(sheet);
       }
     </script>

@@ -63,7 +63,7 @@
       </ul>
     </div>
     <script>
-      var gMap, gWindow, gMarkers = new Array();
+      var gMap, gWindow, gMarkers, gPolylines;
       var gIcons, gColors = ['#ea4335','#3988b4','#499037','#9171c4'];
 
       function resetMarker() {
@@ -97,25 +97,55 @@
         gMarkers[layer].push(marker);
       }
 
+      function initPolyline(poly, layer, title) {
+        poly.addListener('click',function(mouse) {
+          resetMarker();
+          gWindow.setContent(title.replace('\n','<br/>'));
+          var pos = new google.maps.MVCObject();
+          pos.set('position', mouse.latLng);
+          gWindow.open(gMap, pos);
+        });
+        gPolylines[layer].push(poly);
+      }
+
       function initSheet(data) {
         for (var i = 1; i < data.values.length; i++) {
           var r = data.values[i];
-          if (r.length < 5 || r[0] == '' || r[1] == '' || r[2] == '' || r[4] == '') continue;
-          var title = '['+r[1]+', '+r[2]+']';
-          if (r[3] != '') title += '\n'+r[3];
-          var label = {text: r[0], color: '#FFF'};
-          var pos = {lat: parseFloat(r[2]) / 8000, lng: parseFloat(r[1]) / 8000};
-          var layer = parseInt(r[4]);
-          var icon = gIcons[layer];
-          var shape = {type: 'poly', coords: [-1,8,7,0,19,0,27,8,27,14,15,42,11,42,-1,14]};
-          initMarker(new google.maps.Marker({
-            position: pos,
-            icon: gIcons[layer],
-            shape: shape,
-            label: label,
-            title: title,
-            map: gMap
-          }), layer);
+          if (r.length < 5 || r[1] == '' || r[2] == '' || r[4] == '') continue;
+          if (r[0] == '')
+          {
+            var pos = r[1].split(',');
+            var path = new Array();
+            for (var j = 0; j < pos.length; j+=2) {
+              path.push({lat: parseFloat(pos[j+1]) / 8000, lng: parseFloat(pos[j]) / 8000});
+            }
+            var layer = parseInt(r[4]);
+            initPolyline(new google.maps.Polyline({
+              path: path,
+              strokeColor: r[2],
+              strokeOpacity: 1,
+              strokeWeight: 2,
+              map: gMap
+            }), layer, r[3]);
+          }
+          else
+          {
+            var title = '['+r[1]+', '+r[2]+']';
+            if (r[3] != '') title += '\n'+r[3];
+            var label = {text: r[0], color: '#FFF'};
+            var pos = {lat: parseFloat(r[2]) / 8000, lng: parseFloat(r[1]) / 8000};
+            var layer = parseInt(r[4]);
+            var icon = gIcons[layer];
+            var shape = {type: 'poly', coords: [4,8,12,0,23,0,31,8,31,14,19,42,15,42,4,14]};
+            initMarker(new google.maps.Marker({
+              position: pos,
+              icon: gIcons[layer],
+              shape: shape,
+              label: label,
+              title: title,
+              map: gMap
+            }), layer);
+          }
         }
       }
 
@@ -159,13 +189,21 @@
         gMap.controls[google.maps.ControlPosition.LEFT_CENTER].push(document.getElementById('legend'));
 
         gIcons = new Array();
+        gMarkers = new Array();
+        gPolylines = new Array();
         var gLayer = document.getElementById('layer');
         for (var i = 0; i < gColors.length; i++) {
           gMarkers.push(new Array());
+          gPolylines.push(new Array());
           gIcons.push({
-            url: 'data:image/svg+xml;utf8,<svg width="27" height="43" viewBox="16 16 108 172" xmlns="http://www.w3.org/2000/svg"><path d="M70,18C108,18 139,60 111,102S77,158 76,174S65,190 64,174S57,144 29,102S32,18 70,18Z" stroke-width="6" stroke="#ffffff" fill="'+gColors[i]+'"/></svg>',
-            anchor: new google.maps.Point(13.5,42),
-            labelOrigin: new google.maps.Point(13.5,15)
+            anchor: new google.maps.Point(68,184),
+            labelOrigin: new google.maps.Point(70,76),
+            fillColor: gColors[i],
+            fillOpacity: 1,
+            path: 'M70,18C108,18 139,60 111,102S77,158 76,174S65,190 64,174S57,144 29,102S32,18 70,18Z',
+            scale: 0.25,
+            strokeColor: '#ffffff',
+            strokeWeight: 1.5
           });
           if (i == 0) continue;
           gLayer.options[i].style.color = '#fff';
@@ -180,6 +218,9 @@
           for (var i = 1; i < gMarkers.length; i++) {
             for (var j = 0; j < gMarkers[i].length; j++) {
               gMarkers[i][j].setVisible(s == 0 || s == i);
+            }
+            for (var j = 0; j < gPolylines[i].length; j++) {
+              gPolylines[i][j].setVisible(s == 0 || s == i);
             }
           }
         });

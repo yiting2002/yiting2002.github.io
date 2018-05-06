@@ -111,8 +111,8 @@
       function initSheet(data) {
         for (var i = 1; i < data.values.length; i++) {
           var r = data.values[i];
-          if (r.length < 5 || r[1] == '' || r[2] == '' || r[4] == '') continue;
-          if (r[0] == '')
+          if (r.length < 5 || r[0] == '' || r[1] == '' || r[2] == '' || r[4] == '') continue;
+          if (r[0] == '-')
           {
             var pos = r[1].split(',');
             var path = new Array();

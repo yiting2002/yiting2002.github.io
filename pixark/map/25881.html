@@ -151,7 +151,7 @@
       function initMap() {
         gMap = new google.maps.Map(document.getElementById('map'), {
           center: {lat: 0, lng: 0},
-          zoom: 2,
+          zoom: 1,
           streetViewControl: false,
           mapTypeControl: false,
           rotateControl: false
@@ -163,24 +163,24 @@
             var scale = 1 << zoom;
             if (coord.x < 0 || coord.x >= scale) return null;
             if (coord.y < 0 || coord.y >= scale) return null;
-            return '112_'+zoom+'_'+coord.x+'_'+coord.y+'.png';
+            return '25881_'+zoom+'_'+coord.x+'_'+coord.y+'.png';
           },
-          tileSize: new google.maps.Size(450, 450),
+          tileSize: new google.maps.Size(676, 676),
           isPng: true,
-          maxZoom: 3,
+          maxZoom: 2,
           minZoom: 1,
           name: 'PixARK'
         });
         mapType.projection = {
           fromLatLngToPoint: function(latLng) {
             return new google.maps.Point(
-              (latLng.lng() + 0.25) * 450,
-              (latLng.lat() + 0.25) * 450);
+              (latLng.lng() + 0.25) * 676,
+              (latLng.lat() + 0.25) * 676);
           },
           fromPointToLatLng: function(point, noWrap) {
             return new google.maps.LatLng(
-              (point.y / 450) - 0.25,
-              (point.x / 450) - 0.25, true);
+              (point.y / 676) - 0.25,
+              (point.x / 676) - 0.25, true);
           }
         };
         gMap.mapTypes.set('pixark', mapType);

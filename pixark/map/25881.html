@@ -174,13 +174,13 @@
         mapType.projection = {
           fromLatLngToPoint: function(latLng) {
             return new google.maps.Point(
-              (latLng.lng() + 0.25) * 676,
-              (latLng.lat() + 0.25) * 676);
+              (latLng.lng() + 0.25) * 660 + 4,
+              (latLng.lat() + 0.25) * 660 + 4);
           },
           fromPointToLatLng: function(point, noWrap) {
             return new google.maps.LatLng(
-              (point.y / 676) - 0.25,
-              (point.x / 676) - 0.25, true);
+              ((point.y - 4) / 660) - 0.25,
+              ((point.x - 4) / 660) - 0.25, true);
           }
         };
         gMap.mapTypes.set('pixark', mapType);

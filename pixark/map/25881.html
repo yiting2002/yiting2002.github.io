@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta property="og:image" content="112_0_0_0.png" />
+    <title>PixARK #25881</title>
+    <style>
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      #map {
+        height: 100%;
+      }
+      #legend {
+        font-family: monospace;
+        background-color: #fff;
+        padding: 10px;
+        margin: 20px;
+        border: 3px solid #000;
+        font-size: large;
+      }
+      #legend ul {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+      }
+      #legend li {
+        padding: 3px;
+        margin: 0;
+      }
+      #legend select {
+        margin: 6px 0 20px 0;
+        font-family: monospace;
+        font-size: large;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="map"></div>
+    <div id="legend">
+      <a style="font-weight:bold;color:#00F;text-decoration:initial;" target="_blank" href="https://docs.google.com/spreadsheets/d/15LwlFt2_sJv8l3_-Uu6fyssOL9_EuE2-DpF4OcDjcr8/edit">[+增加標記]</a>
+      <br/>
+      <select id="layer" style="width:120px;">
+        <option style="color:#000;background-color:#fff;">0 全部</option>
+        <option>1 傳送門</option>
+        <option>2 天然資源</option>
+        <option>3 部落據點</option>
+      </select><br/>
+      <ul>
+      <li><span style="color:#75654b">▇</span> 墮落荒野</li>
+      <li><span style="color:#425a5f">▇</span> 埋骨之地</li>
+      <li><span style="color:#b3ffdd">▇</span> 黑石山</li>
+      <li><span style="color:#a27f27">▇</span> 鈷礦島</li>
+      <li><span style="color:#7171ff">▇</span> 水晶島</li>
+      <li><span style="color:#ffff62">▇</span> 神秘谷</li>
+      <li><span style="color:#2e962b">▇</span> 暮光森林</li>
+      <li><span style="color:#22692e">▇</span> 閃光山瘠</li>
+      <li><span style="color:#4dc82e">▇</span> 白沙林地</li>
+      <li><span style="color:#7eea35">▇</span> 晨曦島</li>
+      </ul>
+    </div>
+    <script>
+      var gMap, gWindow, gMarkers, gPolylines;
+      var gIcons, gColors = ['#ea4335','#3988b4','#499037','#9171c4'];
+
+      function resetMarker() {
+        for (var i = 1; i < gMarkers.length; i++) {
+          for (var j = 0; j < gMarkers[i].length; j++) {
+            var m = gMarkers[i][j];
+            if (m.getZIndex() != null) {
+              m.setIcon(gIcons[i]);
+              m.setZIndex(null);
+            }
+          }
+        }
+      }
+
+      function initMarker(marker, layer) {
+        marker.addListener('click',function() {
+          resetMarker();
+          var t = marker.getLabel().text;
+          for (var j = 0; j < gMarkers[layer].length; j++) {
+            var m = gMarkers[layer][j];
+            if (m.getLabel().text == t) {
+              m.setIcon(gIcons[0]);
+              m.setZIndex(google.maps.Marker.MAX_ZINDEX+1);
+              if (m == marker) {
+                gWindow.setContent(m.getTitle().replace('\n','<br/>'));
+                gWindow.open(gMap, m);
+              }
+            }
+          }
+        });
+        gMarkers[layer].push(marker);
+      }
+
+      function initPolyline(poly, layer, title) {
+        poly.addListener('click',function(mouse) {
+          resetMarker();
+          gWindow.setContent(title.replace('\n','<br/>'));
+          var pos = new google.maps.MVCObject();
+          pos.set('position', mouse.latLng);
+          gWindow.open(gMap, pos);
+        });
+        gPolylines[layer].push(poly);
+      }
+
+      function initSheet(data) {
+        for (var i = 1; i < data.values.length; i++) {
+          var r = data.values[i];
+          if (r.length < 5 || r[0] == '' || r[1] == '' || r[2] == '' || r[4] == '') continue;
+          if (r[0] == '-')
+          {
+            var pos = r[1].split(',');
+            var path = new Array();
+            for (var j = 0; j < pos.length; j+=2) {
+              path.push({lat: parseFloat(pos[j+1]) / 8000, lng: parseFloat(pos[j]) / 8000});
+            }
+            var layer = parseInt(r[4]);
+            initPolyline(new google.maps.Polyline({
+              path: path,
+              strokeColor: r[2],
+              strokeOpacity: 1,
+              strokeWeight: 2,
+              map: gMap
+            }), layer, r[3]);
+          }
+          else
+          {
+            var title = '['+r[1]+', '+r[2]+']';
+            if (r[3] != '') title += '\n'+r[3];
+            var label = {text: r[0], color: '#FFF'};
+            var pos = {lat: parseFloat(r[2]) / 8000, lng: parseFloat(r[1]) / 8000};
+            var layer = parseInt(r[4]);
+            var icon = gIcons[layer];
+            var shape = {type: 'poly', coords: [4,8,12,0,23,0,31,8,31,14,19,42,15,42,4,14]};
+            initMarker(new google.maps.Marker({
+              position: pos,
+              icon: gIcons[layer],
+              shape: shape,
+              label: label,
+              title: title,
+              map: gMap
+            }), layer);
+          }
+        }
+      }
+
+      function initMap() {
+        gMap = new google.maps.Map(document.getElementById('map'), {
+          center: {lat: 0, lng: 0},
+          zoom: 2,
+          streetViewControl: false,
+          mapTypeControl: false,
+          rotateControl: false
+        });
+        var mapType = new google.maps.ImageMapType({
+          getTileUrl: function(coord, zoom) {
+            zoom -= 1;
+            if (zoom < 0) return null;
+            var scale = 1 << zoom;
+            if (coord.x < 0 || coord.x >= scale) return null;
+            if (coord.y < 0 || coord.y >= scale) return null;
+            return '112_'+zoom+'_'+coord.x+'_'+coord.y+'.png';
+          },
+          tileSize: new google.maps.Size(450, 450),
+          isPng: true,
+          maxZoom: 3,
+          minZoom: 1,
+          name: 'PixARK'
+        });
+        mapType.projection = {
+          fromLatLngToPoint: function(latLng) {
+            return new google.maps.Point(
+              (latLng.lng() + 0.25) * 450,
+              (latLng.lat() + 0.25) * 450);
+          },
+          fromPointToLatLng: function(point, noWrap) {
+            return new google.maps.LatLng(
+              (point.y / 450) - 0.25,
+              (point.x / 450) - 0.25, true);
+          }
+        };
+        gMap.mapTypes.set('pixark', mapType);
+        gMap.setMapTypeId('pixark');
+        gMap.controls[google.maps.ControlPosition.LEFT_CENTER].push(document.getElementById('legend'));
+
+        gIcons = new Array();
+        gMarkers = new Array();
+        gPolylines = new Array();
+        var gLayer = document.getElementById('layer');
+        for (var i = 0; i < gColors.length; i++) {
+          gMarkers.push(new Array());
+          gPolylines.push(new Array());
+          gIcons.push({
+            anchor: new google.maps.Point(68,184),
+            labelOrigin: new google.maps.Point(68,76),
+            fillColor: gColors[i],
+            fillOpacity: 1,
+            path: 'M70,18C108,18 139,60 111,102S77,158 76,174S65,190 64,174S57,144 29,102S32,18 70,18Z',
+            scale: 0.25,
+            strokeColor: '#ffffff',
+            strokeWeight: 1.5
+          });
+          if (i == 0) continue;
+          gLayer.options[i].style.color = '#fff';
+          gLayer.options[i].style.backgroundColor = gColors[i];
+        }
+        gLayer.addEventListener('change', function() {
+          resetMarker();
+          gWindow.close();
+          var s = gLayer.selectedIndex;
+          gLayer.style.color = gLayer.options[s].style.color;
+          gLayer.style.backgroundColor = gLayer.options[s].style.backgroundColor;
+          for (var i = 1; i < gMarkers.length; i++) {
+            for (var j = 0; j < gMarkers[i].length; j++) {
+              gMarkers[i][j].setVisible(s == 0 || s == i);
+            }
+            for (var j = 0; j < gPolylines[i].length; j++) {
+              gPolylines[i][j].setVisible(s == 0 || s == i);
+            }
+          }
+        });
+        gWindow = new google.maps.InfoWindow();
+        gWindow.addListener('closeclick', resetMarker);
+
+        var sheet = document.createElement('script');
+        sheet.type = 'text/javascript';
+        sheet.src = 'https://sheets.googleapis.com/v4/spreadsheets/15LwlFt2_sJv8l3_-Uu6fyssOL9_EuE2-DpF4OcDjcr8/values/map25881!A:E?key=AIzaSyBokzsCC_kJcT22Uw3cTzilwXLVkqQarKs&callback=initSheet';
+        document.getElementsByTagName('head')[0].appendChild(sheet);
+      }
+    </script>
+    <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBokzsCC_kJcT22Uw3cTzilwXLVkqQarKs&callback=initMap">
+    </script>
+  </body>
+</html>
